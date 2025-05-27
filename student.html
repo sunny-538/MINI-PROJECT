@@ -57,9 +57,10 @@
 
         .button-container {
             text-align: right;
+            margin-top: 10px;
         }
 
-        a {
+        a.button {
             display: inline-block;
             margin-top: 10px;
             text-decoration: none;
@@ -70,37 +71,99 @@
             transition: background-color 0.3s ease;
         }
 
-        a:hover {
+        a.button:hover {
             background-color: #2980b9;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin-top: 30px;
+            position: relative;
+        }
+
+        .qr-section a {
+            position: relative;
+            display: inline-block;
+            color: #2c3e50;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .qr-section a .tooltip-img {
+            display: none;
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            padding: 5px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .qr-section a:hover .tooltip-img {
+            display: block;
+        }
+
+        .qr-section img {
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .dashboard {
+                padding: 20px;
+                width: 95%;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            h3, .button-container {
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="dashboard">
-        <h2>Welcome, {{ session['user'] }}</h2>
+<div class="dashboard">
+    <h2>Welcome, {{ session['user'] }}</h2>
 
-        <table>
-            <tr>
-                <th>Month</th>
-                <th>Days Present</th>
-                <th>Monthly Fee</th>
-            </tr>
-            {% for row in records %}
-                <tr>
-                    <td>{{ row[0] }}</td>
-                    <td>{{ row[1] }}</td>
-                    <td>₹{{ row[2] }}</td>
-                </tr>
-            {% endfor %}
-        </table>
+    <table>
+        <tr>
+            <th>Month</th>
+            <th>Days Present</th>
+            <th>Monthly Fee</th>
+        </tr>
+        {% for row in records %}
+        <tr>
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td>₹{{ row[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 
-        <h3>Total Due: ₹{{ total_due }}</h3>
+    <h3>Total Due: ₹{{ total_due }}</h3>
 
-        <div class="button-container">
-            <a href="/logout">Logout</a>
-        </div>
+    <div class="qr-section">
+        <a href="/static/scanner.jpg" target="_blank">
+            To pay fee scan here
+            <div class="tooltip-img">
+                <img src="/static/scanner.jpg" alt="QR Scanner">
+            </div>
+        </a>
     </div>
+
+    <div class="button-container">
+        <a class="button" href="/logout">Logout</a>
+    </div>
+</div>
 
 </body>
 </html>
