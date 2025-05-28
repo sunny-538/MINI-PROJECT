@@ -151,14 +151,10 @@
 
     <h3>Total Due: ₹{{ total_due }}</h3>
 
-    <div class="qr-section">
-        <a href="/static/scanner.jpg" target="_blank">
-            To pay fee scan here
-            <div class="tooltip-img">
-                <img src="/static/scanner.jpg" alt="QR Scanner">
-            </div>
-        </a>
-    </div>
+   <div class="qr-section">
+    <p><strong>To pay fee, scan the QR code below:</strong></p>
+    <img src="/static/scanner.jpg" alt="QR Code to Pay Fee" style="width: 200px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+</div>
 
     <div class="button-container">
         <a class="button" href="/logout">Logout</a>
