@@ -1,96 +1,165 @@
-from flask import Flask, render_template, request, redirect, session
-import sqlite3
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background: linear-gradient(to right, #74ebd5, #acb6e5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-app = Flask(__name__)
-app.secret_key = 'your_secret_key'
+        .dashboard {
+            background-color: #fff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            width: 80%;
+            max-width: 800px;
+        }
 
-DB_PATH = 'hostel_mess_demo.db'
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+        }
 
-@app.route('/')
-def home():
-    return redirect('/login')
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        role = request.form['role']
-        username = request.form['username']
-        password = request.form['password']
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
 
-        if role == 'admin':
-            # Hardcoded admin login (you can use DB for this too)
-            if username == 'admin' and password == 'admin123':
-                session['user'] = 'admin'
-                return redirect('/admin')
-            else:
-                return "Invalid admin credentials", 401
+        th {
+            background-color: #f7f7f7;
+            color: #333;
+        }
 
-        elif role == 'student':
-            conn = sqlite3.connect(DB_PATH)
-            c = conn.cursor()
-            c.execute("SELECT roll, name, password FROM students WHERE roll = ?", (username,))
-            student = c.fetchone()
-            conn.close()
-            if student and password == student[2]:  # student[2] is password
-                session['user'] = student[0]  # roll
-                return redirect('/student')
-            else:
-                return "Invalid student credentials", 401
+        tr:hover {
+            background-color: #f1f9ff;
+        }
 
-    return render_template('login.html')
+        h3 {
+            text-align: right;
+            color: #2c3e50;
+        }
 
-@app.route('/student')
-def student():
-    if 'user' in session and session['user'] != 'admin':
-        roll = session['user']
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
+        .button-container {
+            text-align: right;
+            margin-top: 10px;
+        }
 
-        # Get monthly mess records
-        c.execute("SELECT month, days_present, fee FROM mess_records WHERE roll = ?", (roll,))
-        records = c.fetchall()
+        a.button {
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
 
-        # Calculate total due
-        c.execute("SELECT dues FROM students WHERE roll = ?", (roll,))
-        total_due = c.fetchone()[0]
+        a.button:hover {
+            background-color: #2980b9;
+        }
 
-        conn.close()
+        .qr-section {
+            text-align: center;
+            margin-top: 30px;
+            position: relative;
+        }
 
-        return render_template('student.html', records=records, total_due=total_due)
-    return redirect('/login')
+        .qr-section a {
+            position: relative;
+            display: inline-block;
+            color: #2c3e50;
+            font-weight: bold;
+            text-decoration: none;
+        }
 
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    if 'user' in session and session['user'] == 'admin':
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
+        .qr-section a .tooltip-img {
+            display: none;
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            padding: 5px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
 
-        if request.method == 'POST':
-            roll = request.form['roll']
-            month = request.form['month']
-            days = int(request.form['days'])
-            fee = days * 100
+        .qr-section a:hover .tooltip-img {
+            display: block;
+        }
 
-            # Update student dues
-            c.execute("UPDATE students SET dues = dues + ? WHERE roll = ?", (fee, roll))
+        .qr-section img {
+            width: 100%;
+            border-radius: 5px;
+        }
 
-            # Insert into mess_records
-            c.execute("INSERT INTO mess_records (roll, month, days_present, fee) VALUES (?, ?, ?, ?)",
-                      (roll, month, days, fee))
+        @media (max-width: 600px) {
+            .dashboard {
+                padding: 20px;
+                width: 95%;
+            }
 
-            conn.commit()
+            th, td {
+                padding: 8px;
+            }
 
-        c.execute("SELECT roll, name, dues FROM students")
-        students = c.fetchall()
-        conn.close()
+            h3, .button-container {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
 
-        return render_template('admin.html', students=students)
-    return redirect('/login')
+<div class="dashboard">
+    <h2>Welcome, {{ session['user'] }}</h2>
 
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect('/login')
+    <table>
+        <tr>
+            <th>Month</th>
+            <th>Days Present</th>
+            <th>Monthly Fee</th>
+        </tr>
+        {% for row in records %}
+        <tr>
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td>₹{{ row[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 
-if __name__ == '__main__':
-    app.run(debug=True)
+    <h3>Total Due: ₹{{ total_due }}</h3>
+
+   <div class="qr-section">
+    <p><strong>To pay fee, scan the QR code below:</strong></p>
+    <img src="/static/scanner.jpg" alt="QR Code to Pay Fee" style="width: 200px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+</div>
+
+    <div class="button-container">
+        <a class="button" href="/logout">Logout</a>
+    </div>
+</div>
+
+</body>
+</html>
