@@ -78,33 +78,16 @@
     button:hover {
       background: #f55;
     }
-
-    table {
-      width: 100%;
-      max-width: 700px;
-      border-collapse: collapse;
-      background: #fff;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
-    }
-
-    th {
-      background: #fcb69f;
-    }
   </style>
 </head>
 <body>
 
   <div class="dashboard">
     <h2>Admin Attendance Entry</h2>
-    <form id="attendance-form">
+    <form method="post">
       <label for="month">Select Month</label>
       <select id="month" name="month" required>
+        <option value="" disabled selected>Select month</option>
         <option>January</option>
         <option>February</option>
         <option>March</option>
@@ -119,77 +102,16 @@
         <option>December</option>
       </select>
 
-      <div id="students-container">
-        <!-- Dynamic list of students -->
+      {% for student in students %}
+      <div class="student-entry">
+        <span>{{ student.name }} (Roll No: {{ student.roll }})</span>
+        <input type="number" name="days_present[{{ student.roll }}]" min="0" max="31" required>
       </div>
+      {% endfor %}
 
       <button type="submit">Submit Attendance</button>
     </form>
   </div>
-
-  <table id="attendance-table" style="display:none;">
-    <thead>
-      <tr>
-        <th>Month</th>
-        <th>Student Name</th>
-        <th>Roll Number</th>
-        <th>Days Present</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Populated by JavaScript -->
-    </tbody>
-  </table>
-
-  <script>
-    // Predefined students list
-    const students = [
-      { name: 'pujitha', roll: '556' },
-      { name: 'santhosh', roll: '538' },
-      { name: 'shashidar', roll: '503' },
-      { name: 'Divya', roll: '539' },
-      { name: 'manasa', roll: '511' }
-    ];
-
-    const studentsContainer = document.getElementById('students-container');
-
-    // Render inputs for each student
-    students.forEach((student, index) => {
-      const div = document.createElement('div');
-      div.className = 'student-entry';
-      div.innerHTML = `
-        <span>${student.name} (Roll No: ${student.roll})</span>
-        <input type="number" min="0" max="31" id="days-${index}" required />
-      `;
-      studentsContainer.appendChild(div);
-    });
-
-    // Handle form submission
-    document.getElementById('attendance-form').addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      const month = document.getElementById('month').value;
-      if (!month) {
-        alert("Please select a month.");
-        return;
-      }
-
-      const tbody = document.querySelector('#attendance-table tbody');
-      tbody.innerHTML = ''; // Clear previous data
-
-      students.forEach((student, index) => {
-        const daysPresent = document.getElementById(days-${index}).value;
-
-        const row = tbody.insertRow();
-        row.insertCell(0).textContent = month;
-        row.insertCell(1).textContent = student.name;
-        row.insertCell(2).textContent = student.roll;
-        row.insertCell(3).textContent = daysPresent || '0';
-      });
-
-      document.getElementById('attendance-table').style.display = 'table';
-    });
-  </script>
 
 </body>
 </html>
